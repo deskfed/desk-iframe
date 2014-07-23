@@ -18,7 +18,8 @@
   var METHOD = {
     SET_SOFTPHONE_HEIGHT: 'setSoftphoneHeight',
     SET_SOFTPHONE_WIDTH: 'setSoftphoneWidth',
-    SCREEN_POP: 'screenPop'
+    SCREEN_POP: 'screenPop',
+    SEARCH_AND_SCREEN_POP: 'searchAndScreenPop'
   };
 
   var toString = Object.prototype.toString;
@@ -52,8 +53,12 @@
   };
 
   // String -> Int -> Object -> ()
-  inact.searchAndScreenPop = function(searchString, params) {
-
+  inact.searchAndScreenPop = function(searchString, queryParams, cb) {
+    postMessage({
+      method: METHOD.SEARCH_AND_SCREEN_POP,
+      searchString: searchString,
+      queryParams: queryParams
+    }, cb);
   };
 
   // String -> Int -> ()

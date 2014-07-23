@@ -18,6 +18,11 @@ desk.ready(function() {
     },
     'screen-pop': function(params) {
       inact.screenPop(params['screenPop-id'], params['screenPop-objectType']);
+    },
+    'search-and-screen-pop': function(params) {
+      inact.searchAndScreenPop(params['searchAndScreenPop-searchString'], {
+        channel: 'phone'
+      });
     }
   };
 
