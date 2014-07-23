@@ -9,7 +9,7 @@ var extname = path.extname;
 // try GET /app.js
 
 app.use(function *(){
-  var path = __dirname + this.path;
+  var path = __dirname + (this.path==='/' ? '/index.html' : this.path);
   this.type = extname(path);
   this.body = fs.createReadStream(path);
 });
