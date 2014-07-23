@@ -1,19 +1,33 @@
 desk.ready(function() {
-  var onFormSubmit, keyeify;
+  var onFormSubmit, keyeify, eventMap;
+  var inact = desk.interaction;
+  var cti = inact.cti;
   keyeify = function(acc, pair, idx, arr) {
     acc[pair.name] = pair.value;
     return acc;
   };
-  onFormSubmit = function(e) {
-    var $form, form;
-    e.preventDefault();
-    $form = $(this);
-    form = $form.serializeArray().reduce(keyeify, {});
-    var cti = desk.interaction.cti;
-    $(document.body).css({ height: form.height, width: form.width });
-    cti.setSoftphoneHeight(form.height);
-    cti.setSoftphoneWidth(form.width);
+
+  dispatchMap = {
+    'height-form': function(params) {
+      $(document.body).css('height', params.height)
+      cti.setSoftphoneHeight(params.height);
+    },
+    'width-form': function(params) {
+      $(document.body).css('width', params.width)
+      cti.setSoftphoneWidth(params.width);
+    },
+    'screen-pop': function(params) {
+      inact.screenPop(params['screenPop-id'], params['screenPop-objectType']);
+    }
   };
 
-  $('#main-form').on('submit', onFormSubmit);
+  onFormSubmit = function(e) {
+    var $form, params;
+    e.preventDefault();
+    $form = $(this);
+    params = $form.serializeArray().reduce(keyeify, {});
+    dispatchMap[$form.attr('id')](params);
+  };
+
+  $('form').on('submit', onFormSubmit);
 });

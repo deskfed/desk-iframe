@@ -15,6 +15,12 @@
   };
   desk.VERSION = VERSION;
 
+  var METHOD = {
+    SET_SOFTPHONE_HEIGHT: 'setSoftphoneHeight',
+    SET_SOFTPHONE_WIDTH: 'setSoftphoneWidth',
+    SCREEN_POP: 'screenPop'
+  };
+
   var toString = Object.prototype.toString;
 
   /*
@@ -41,23 +47,23 @@
 
   // public api
   // String -> Int -> String -> ()
-  inact.screenPop = function(nonce, id, objectType) {
-
+  inact.screenPop = function(id, objectType, cb) {
+    postMessage({ method: METHOD.SCREEN_POP, id: id, objectType: objectType }, cb);
   };
 
   // String -> Int -> Object -> ()
-  inact.searchAndScreenPop = function(nonce, searchString, params) {
+  inact.searchAndScreenPop = function(searchString, params) {
 
   };
 
   // String -> Int -> ()
   cti.setSoftphoneHeight = function(height, cb) {
-    postMessage({ method: 'setSoftphoneHeight', height: height }, cb);
+    postMessage({ method: METHOD.SET_SOFTPHONE_HEIGHT, height: height }, cb);
   };
 
   // String -> Int -> ()
   cti.setSoftphoneWidth = function(width, cb) {
-    postMessage({ method: 'setSoftphoneWidth', width: width }, cb);
+    postMessage({ method: METHOD.SET_SOFTPHONE_WIDTH, width: width }, cb);
   };
 
   cti.enableClickToDial = function(nonce) {
