@@ -10,14 +10,14 @@
   // sort of like using `<script defer src='url'>`
   var script = document.createElement('script');
   script.async = true;
-  script.src = 'deskcti.js';
+  script.src = '//desksoftphone.herokuapp.com/deskcti.js';
   var anchor = document.getElementsByTagName('script')[0];
   anchor.parentNode.insertBefore(script, anchor);
 
   function onDomLoad() {
+    domReady = true;
     document.removeEventListener('DOMContentLoaded', onDomLoad);
     window.removeEventListener('load', onDomLoad);
-    domReady = true;
     init();
   }
 
@@ -35,9 +35,7 @@
       return;
     }
     while ((readyItem = desk.readyQueue.shift())) {
-      if (typeof readyItem === 'function') {
-        readyItem();
-      }
+      readyItem();
     }
   }
 

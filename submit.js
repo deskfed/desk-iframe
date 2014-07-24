@@ -1,13 +1,14 @@
 desk.ready(function() {
-  var onFormSubmit, keyeify, eventMap;
   var inact = desk.interaction;
   var cti = inact.cti;
-  keyeify = function(acc, pair, idx, arr) {
+  var keyeify = function(acc, pair, idx, arr) {
     acc[pair.name] = pair.value;
     return acc;
   };
 
-  dispatchMap = {
+  var $dialed = $('#number-dialied');
+
+  var dispatchMap = {
     'height-form': function(params) {
       $(document.body).css('height', params.height)
       cti.setSoftphoneHeight(params.height);
@@ -16,23 +17,24 @@ desk.ready(function() {
       $(document.body).css('width', params.width)
       cti.setSoftphoneWidth(params.width);
     },
-    'screen-pop': function(params) {
-      inact.screenPop(params['screenPop-id'], params['screenPop-objectType']);
-    },
-    'search-and-screen-pop': function(params) {
-      inact.searchAndScreenPop(params['searchAndScreenPop-searchString'], {
+    'search-form': function(params) {
+      inact.searchAndScreenPop(params['search-value'], {
+        objectType: params['search-objectType'],
         channel: 'phone'
       });
     }
   };
 
-  onFormSubmit = function(e) {
-    var $form, params;
+  var onFormSubmit = function(e) {
     e.preventDefault();
-    $form = $(this);
-    params = $form.serializeArray().reduce(keyeify, {});
+    var $form = $(this);
+    var params = $form.serializeArray().reduce(keyeify, {});
     dispatchMap[$form.attr('id')](params);
   };
+
+  cti.onClickToDial(function(params) {
+    $dialed.val(params.phoneNum);
+  });
 
   $('form').on('submit', onFormSubmit);
 });
