@@ -20,29 +20,35 @@
     '[object Undefined]': 'undefined'
   };
 
-  var EVENTS_MAP = {
+  var EVENT_MAP = {
     CONNECT: 'connect'
   };
 
-  var OUTBOUND_METHOD_MAP = {
-    SET_SOFTPHONE_HEIGHT: 'setSoftphoneHeight',
-    SET_SOFTPHONE_WIDTH: 'setSoftphoneWidth',
-    SCREEN_POP: 'screenPop',
-    SEARCH_AND_SCREEN_POP: 'searchAndScreenPop'
-  };
-
-  var INBOUND_METHOD_MAP = {
-    ON_CLICK_TO_DIAL: 'onClickToDial'
-  };
+  var CALLBACK_LISTENERS = ['clickToDial'];
 
   var listeners = {};
 
   var ObjProto = Object.prototype;
   var ArrProto = Array.prototype;
   var FunProto = Function.prototype;
+  var call = FunProto.call;
 
-  var toString = FunProto.call.bind(ObjProto.toString);
-  var slice = FunProto.call.bind(ArrProto.slice);
+  // turn these object oriented functions into pure functions
+  // to make them easier to call. ex:
+  // [].slice(arguments)
+  // Array.prototype.slice(arguments)
+  // vs
+  // slice(arguments)
+  var toString = call.bind(ObjProto.toString);
+  var slice = call.bind(ArrProto.slice);
+
+  var compose = desk.compose = function() {
+    return slice(arguments).reverse().reduce(function(prev, cur) {
+      return function() {
+        return cur(prev.apply(null, slice(arguments)));
+      };
+    });
+  };
 
   var typeOf = desk.typeOf = function(item) {
     return TYPE_MAP[toString(item)];
@@ -77,18 +83,25 @@
     window.parent.postMessage(params, '*');
   }
 
+  function postMessageDecorator(obj, methodName) {
+    var decorator = (function(methodName, pair) {
+      var params = pair[0];
+      var cb = pair[1];
+      params = extend(params, { postMsgId: postMessageId(), methodName: methodName });
+      postMessage.call(null, params, cb);
+    }).bind(null, methodName);
+    obj[methodName] = compose(decorator, obj[methodName]);
+  }
+
   function parseQueryParams() {
   }
 
   function onMessage(e) {
-    if (e.data.method === 'clickToDial') {
-      var queue = listeners[INBOUND_METHOD_MAP.ON_CLICK_TO_DIAL];
-
-      if (typeOf(queue) === 'array') {
-        queue.forEach(function(cb) {
-          cb(e.data);
-        });
-      }
+    var queue = listeners['on' + e.methodName];
+    if (typeOf(queue) === 'array') {
+      queue.forEach(function(cb) {
+        cb(e.data);
+      });
     }
   }
 
@@ -98,38 +111,20 @@
   var cti = inact.cti = {};
 
   // public api
-  // String -> Int -> String -> ()
   inact.screenPop = function(id, objectType, cb) {
-    postMessage({
-      method: OUTBOUND_METHOD_MAP.SCREEN_POP,
-      id: id,
-      objectType: objectType
-    }, cb);
+    return [{ id: id, objectType: objectType }, cb];
   };
 
-  // String -> Int -> Object -> ()
   inact.searchAndScreenPop = function(searchString, queryParams, cb) {
-    postMessage({
-      method: OUTBOUND_METHOD_MAP.SEARCH_AND_SCREEN_POP,
-      searchString: searchString,
-      queryParams: queryParams
-    }, cb);
+    return [{ searchString: searchString, queryParams: queryParams }, cb];
   };
 
-  // String -> Int -> ()
   cti.setSoftphoneHeight = function(height, cb) {
-    postMessage({
-      method: OUTBOUND_METHOD_MAP.SET_SOFTPHONE_HEIGHT,
-      height: height
-    }, cb);
+    return [{ height: height }, cb];
   };
 
-  // String -> Int -> ()
   cti.setSoftphoneWidth = function(width, cb) {
-    postMessage({
-      method: OUTBOUND_METHOD_MAP.SET_SOFTPHONE_WIDTH,
-      width: width
-    }, cb);
+    return [{ width: width }, cb];
   };
 
   cti.enableClickToDial = function() {
@@ -141,8 +136,9 @@
   };
 
   cti.onClickToDial = function(cb) {
-    postMessage({
-      method: INBOUND_METHOD_MAP.ON_CLICK_TO_DIAL
-    }, cb);
+    return [{}, cb];
   };
+
+  Object.keys(inact).forEach(postMessageDecorator.bind(null, inact));
+  Object.keys(cti).forEach(postMessageDecorator.bind(null, cti));
 }(window, document));
