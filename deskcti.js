@@ -2,7 +2,7 @@
 // we have these as params so that they can be minified/uglified
 (function(window, document, undefined) {
   var VERSION = 1.0;
-  var ctrPrefix = new Date();
+  var ctrPrefix = new Date().valueOf();
   var postMsgCtr = 0;
   var desk = window.desk = window.desk || {};
   desk.VERSION = VERSION;
@@ -39,6 +39,7 @@
   // Array.prototype.slice(arguments)
   // vs
   // slice(arguments)
+  var keys = Object.keys;
   var toString = call.bind(ObjProto.toString);
   var slice = call.bind(ArrProto.slice);
 
@@ -74,7 +75,7 @@
     var queue;
     // alow coercion :)
     if (cb != null) {
-      queue = (listeners[params.method] || (listeners[params.method] = []))
+      queue = (listeners[params.method] || (listeners[params.method] = []));
       queue.push(cb);
     }
     // because of the IE10+ support we can just use
@@ -83,21 +84,52 @@
     window.parent.postMessage(params, '*');
   }
 
-  function postMessageDecorator(obj, methodName) {
-    var decorator = (function(methodName, pair) {
+  function postMessageDecorator(obj, method) {
+    var decorator = (function(method, pair) {
       var params = pair[0];
       var cb = pair[1];
-      params = extend(params, { postMsgId: postMessageId(), methodName: methodName });
+      params = extend(params, { postMsgId: postMessageId(), method: method });
       postMessage.call(null, params, cb);
-    }).bind(null, methodName);
-    obj[methodName] = compose(decorator, obj[methodName]);
+    }).bind(null, method);
+    obj[method] = compose(decorator, obj[method]);
   }
 
-  function parseQueryParams() {
+  function parseQueryString(queryString) {
+    var params = {};
+    // TODO: improve this
+    if (typeOf(queryString) !== 'string') {
+      return params;
+    }
+    if (queryString.charAt(0) === '?') {
+      queryString = queryString.slice(1);
+    }
+    if (queryString.length === 0) {
+      return params;
+    }
+
+    var pairs = queryString.split('&');
+    return pairs.reduce(function(params, pair) {
+      var pair = pair.split('=');
+      params[pair[0]] = !!pair[1] ? window.decodeUriComponent(pair[1]) : null;
+      return params;
+    }, params);
+  }
+
+  function parseAuthParams() {
+
   }
 
   function onMessage(e) {
-    var queue = listeners['on' + e.methodName];
+    console.log(e);
+    var data = e.data;
+    if (!data.method) {
+      return;
+    }
+    var method = data.method.charAt(0).toUpperCase() + data.method.slice(1);
+    var queue = listeners['on' + method];
+    if (!queue) {
+      return;
+    }
     if (typeOf(queue) === 'array') {
       queue.forEach(function(cb) {
         cb(e.data);
@@ -105,8 +137,7 @@
     }
   }
 
-  // following salesforce api where methods to interaction with the
-  // api are attached to `interaction`
+  // follow salesforce api where interaction and cti both expose methods
   var inact = desk.interaction = {};
   var cti = inact.cti = {};
 
@@ -127,18 +158,20 @@
     return [{ width: width }, cb];
   };
 
-  cti.enableClickToDial = function() {
-
+  cti.enableClickToDial = function(cb) {
+    return [{}, cb];
   };
 
-  cti.disableClickToDial =  function() {
-
+  cti.disableClickToDial =  function(cb) {
+    return [{}, cb];
   };
 
   cti.onClickToDial = function(cb) {
     return [{}, cb];
   };
 
-  Object.keys(inact).forEach(postMessageDecorator.bind(null, inact));
-  Object.keys(cti).forEach(postMessageDecorator.bind(null, cti));
+  keys(inact)
+    .filter(function(key) { return key !== 'cti'; })
+    .forEach(postMessageDecorator.bind(null, inact));
+  keys(cti).forEach(postMessageDecorator.bind(null, cti));
 }(window, document));

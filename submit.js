@@ -36,5 +36,7 @@ desk.ready(function() {
     $dialed.val(params.phoneNum);
   });
 
+  cti.setSoftphoneWidth(300);
+
   $('form').on('submit', onFormSubmit);
 });

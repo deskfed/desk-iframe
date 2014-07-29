@@ -10,7 +10,11 @@
   // sort of like using `<script defer src='url'>`
   var script = document.createElement('script');
   script.async = true;
-  script.src = '//desksoftphone.herokuapp.com/deskcti.js';
+  if (!!~window.location.hostname.indexOf('localhost')) {
+    script.src = 'deskcti.js';
+  } else {
+    script.src = '//desksoftphone.herokuapp.com/deskcti.js';
+  }
   var anchor = document.getElementsByTagName('script')[0];
   anchor.parentNode.insertBefore(script, anchor);
 
