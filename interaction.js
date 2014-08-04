@@ -7,7 +7,7 @@
   desk.readyQueue = [];
 
   // this implementation allows us to load the actual library asynchronously
-  // sort of like using `<script defer src='url'>`
+  // sort of like using `<script async src='url'>`
   var script = document.createElement('script');
   script.async = true;
   if (!!~window.location.hostname.indexOf('localhost')) {

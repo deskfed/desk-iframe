@@ -2,10 +2,9 @@
 // we have these as params so that they can be minified/uglified
 (function(window, document, undefined) {
   var VERSION = 1.0;
-  var ctrPrefix = new Date().valueOf();
-  var postMsgCtr = 0;
   var desk = window.desk = window.desk || {};
   desk.VERSION = VERSION;
+  var nonce = null;
   window.addEventListener('message', onMessage, false);
 
   var TYPE_MAP = {
@@ -67,10 +66,6 @@
     return target;
   }
 
-  function postMessageId() {
-    return ctrPrefix + postMsgCtr++;
-  }
-
   function postMessage(params, cb) {
     var queue;
     // alow coercion :)
@@ -88,31 +83,31 @@
     var decorator = (function(method, pair) {
       var params = pair[0];
       var cb = pair[1];
-      params = extend(params, { postMsgId: postMessageId(), method: method });
+      params = extend(params, {
+        method: method,
+        apiVersion: VERSION,
+        nonce: nonce
+      });
       postMessage.call(null, params, cb);
     }).bind(null, method);
     obj[method] = compose(decorator, obj[method]);
   }
 
-  function parseQueryString(queryString) {
-    var params = {};
-    // TODO: improve this
-    if (typeOf(queryString) !== 'string') {
-      return params;
-    }
-    if (queryString.charAt(0) === '?') {
-      queryString = queryString.slice(1);
-    }
-    if (queryString.length === 0) {
-      return params;
-    }
+  function decode(string) {
+    return window.decodeURIComponent(string || '')
+      .replace('+', ' ')
+  }
 
-    var pairs = queryString.split('&');
-    return pairs.reduce(function(params, pair) {
-      var pair = pair.split('=');
-      params[pair[0]] = !!pair[1] ? window.decodeUriComponent(pair[1]) : null;
+  function parseQueryString(queryString) {
+    var args = queryString.split('&');
+    return args.reduce(function(params, pair) {
+      var pair, key, value;
+      pair = pair.split('=');
+      key = decode(pair[0]);
+      value = decode(pair[1]);
+      params[key] = value;
       return params;
-    }, params);
+    }, {});
   }
 
   function parseAuthParams() {
@@ -120,7 +115,6 @@
   }
 
   function onMessage(e) {
-    console.log(e);
     var data = e.data;
     if (!data.method) {
       return;
@@ -146,8 +140,8 @@
     return [{ id: id, objectType: objectType }, cb];
   };
 
-  inact.searchAndScreenPop = function(searchString, queryParams, cb) {
-    return [{ searchString: searchString, queryParams: queryParams }, cb];
+  inact.searchAndScreenPop = function(searchString, queryParams, callType, cb) {
+    return [{ searchString: searchString, queryParams: queryParams, callType: callType }, cb];
   };
 
   cti.setSoftphoneHeight = function(height, cb) {
@@ -170,8 +164,15 @@
     return [{}, cb];
   };
 
-  keys(inact)
-    .filter(function(key) { return key !== 'cti'; })
-    .forEach(postMessageDecorator.bind(null, inact));
-  keys(cti).forEach(postMessageDecorator.bind(null, cti));
+  function initialize() {
+    keys(inact)
+      .filter(function(key) { return key !== 'cti'; })
+      .forEach(postMessageDecorator.bind(null, inact));
+    keys(cti).forEach(postMessageDecorator.bind(null, cti));
+    var search = window.location.search.replace(/^\?/, '');
+    var params = parseQueryString(search);
+    var authParams = parseAuthParams(params);
+  }
+
+  initialize();
 }(window, document));
