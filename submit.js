@@ -25,11 +25,24 @@ desk.ready(function() {
       $(document.body).css('width', params.width)
       cti.setSoftphoneWidth(params.width, respCallback.bind(null, 'set width'));
     },
+    'pop-to-form': function(params) {
+      inact.screenPop(params['pop-value'],
+        'objectType=' + window.encodeURIComponent(params['pop-objectType']),
+        respCallback.bind(null, 'screen pop')
+      );
+    },
     'search-form': function(params) {
       inact.searchAndScreenPop(params['search-value'],
-        'objectType=' + window.encodeURIComponent(params['search-objectType'],
-        respCallback.bind(null, 'search and screen pop'))
+        'objectType=' + window.encodeURIComponent(params['search-objectType']),
+        respCallback.bind(null, 'search and screen pop')
       );
+    },
+    'click-to-dial-form': function(params) {
+      if (params && params['click-to-dial'] === 'on') {
+        cti.enableClickToDial(respCallback.bind(null, 'enable click to dial'));
+      } else {
+        cti.disableClickToDial(respCallback.bind(null, 'disable click to dial'));
+      }
     }
   };
 

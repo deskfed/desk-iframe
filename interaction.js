@@ -54,7 +54,10 @@
     return desk;
   };
 
+  // use the load event as a fallback in case the `DOMContentLoaded` event
+  // is not supported
   document.addEventListener('DOMContentLoaded', onDomLoad, false);
   window.addEventListener('load', onDomLoad, false);
+  // make sure we also wait for the async script to be loaded
   script.onload = onScriptReady;
 }(window, document));

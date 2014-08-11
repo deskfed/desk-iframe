@@ -19,6 +19,18 @@
     </label>
     <input type='submit' value='submit'>
   </form>
+  <form id='pop-to-form' method='POST'>
+    <label>
+      pop to:
+      <select name='pop-objectType'>
+        <option value="case" selected>Case</option>
+        <option value="customer">Customer</option>
+        <option value="company">Company</option>
+      </select>
+      <input name='pop-value' type='text' value=''>
+    </label>
+    <input type='submit' value='submit'>
+  </form>
   <form id='search-form' method='POST'>
     <label>
       search:
@@ -28,6 +40,13 @@
         <option value="company">Company</option>
       </select>
       <input name='search-value' type='text' value=''>
+    </label>
+    <input type='submit' value='submit'>
+  </form>
+  <form id='click-to-dial-form' method='POST'>
+    <label>
+      click to dial:
+      <input type='checkbox' name='click-to-dial'>
     </label>
     <input type='submit' value='submit'>
   </form>

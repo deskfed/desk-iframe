@@ -199,7 +199,6 @@
   }
 
   function onMessage(e) {
-    console.log('on message in iframe', e);
     var origin, data;
     try {
       origin = e.origin;
@@ -239,11 +238,11 @@
   //          public api
   // ******************************
   inact.screenPop = function(id, queryParams, cb) {
-    return [{ id: id, queryString: queryParams}, cb];
+    return [{ id: id, queryParams: queryParams }, cb];
   };
 
   inact.searchAndScreenPop = function(searchString, queryParams, cb) {
-    return [{ searchString: searchString, queryParams: queryParams}, cb];
+    return [{ searchString: searchString, queryParams: queryParams }, cb];
   };
 
   cti.setSoftphoneHeight = function(height, cb) {
