@@ -10,6 +10,7 @@
   // sort of like using `<script async src='url'>`
   var script = document.createElement('script');
   script.async = true;
+  // NOTE: these links are temporary until we get a place to host the actual file
   if (!!~window.location.hostname.indexOf('localhost')) {
     script.src = 'deskcti.js';
   } else {

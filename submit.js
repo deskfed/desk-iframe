@@ -6,22 +6,30 @@ desk.ready(function() {
     return acc;
   };
 
-  var $dialed = $('#number-dialied');
+  function respCallback(method, resp) {
+    if (resp.result) {
+      console.log(method, 'success', resp.result);
+    } else {
+      console.log(method, 'error', resp.error);
+    }
+  }
+
+  var $dialed = $('#number-dialed');
 
   var dispatchMap = {
     'height-form': function(params) {
       $(document.body).css('height', params.height)
-      cti.setSoftphoneHeight(params.height);
+      cti.setSoftphoneHeight(params.height, respCallback.bind(null, 'set height'));
     },
     'width-form': function(params) {
       $(document.body).css('width', params.width)
-      cti.setSoftphoneWidth(params.width);
+      cti.setSoftphoneWidth(params.width, respCallback.bind(null, 'set width'));
     },
     'search-form': function(params) {
-      inact.searchAndScreenPop(params['search-value'], {
-        objectType: params['search-objectType'],
-        channel: 'phone'
-      });
+      inact.searchAndScreenPop(params['search-value'],
+        'objectType=' + window.encodeURIComponent(params['search-objectType'],
+        respCallback.bind(null, 'search and screen pop'))
+      );
     }
   };
 
@@ -32,11 +40,13 @@ desk.ready(function() {
     dispatchMap[$form.attr('id')](params);
   };
 
-  cti.onClickToDial(function(params) {
-    $dialed.val(params.phoneNum);
+  cti.onClickToDial(function(resp) {
+    console.log('onClickToDial');
+    $dialed.val(resp.result.number);
   });
 
-  cti.setSoftphoneWidth(300);
+  cti.setSoftphoneWidth(300, respCallback.bind(null, 'origin width set'));
+  cti.enableClickToDial(respCallback.bind(null, 'enable click to dial'));
 
   $('form').on('submit', onFormSubmit);
 });
