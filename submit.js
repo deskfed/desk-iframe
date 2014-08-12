@@ -27,13 +27,13 @@ desk.ready(function() {
     },
     'pop-to-form': function(params) {
       inact.screenPop(params['pop-value'],
-        'objectType=' + window.encodeURIComponent(params['pop-objectType']),
+        'object=' + window.encodeURIComponent(params['pop-object']),
         respCallback.bind(null, 'screen pop')
       );
     },
     'search-form': function(params) {
       inact.searchAndScreenPop(params['search-value'],
-        'objectType=' + window.encodeURIComponent(params['search-objectType']),
+        'object=' + window.encodeURIComponent(params['search-object']),
         respCallback.bind(null, 'search and screen pop')
       );
     },
